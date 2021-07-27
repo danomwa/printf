@@ -1,141 +1,114 @@
-#ifndef HOLBERTON_H
-#define HOLBERTON_H
+#ifndef HOLBERTON_H_
+#define HOLBERTON_H_
+
+/* begin standard C header files */
 #include <stdlib.h>
-#include <unistd.h>
 #include <stdarg.h>
+#include <unistd.h>
+#include <limits.h>
 #include <stdio.h>
 
-int _putchar(char c);
+/* macros */
+
+#define BUFSIZE 1024
+#define TRUE (1 == 1)
+#define FALSE !TRUE
+#define LOWHEX 0
+#define UPHEX 1
+
+/* structs */
+/**
+ * struct inventory_s - inventory of common variables needed
+ * @fmt: the input format string
+ * @i: index to traverse the format string
+ * @args: the variadic arguments list of input arguments
+ * @buffer: buffer to be written to before writing to stdout
+ * @buf_index: index to traverse the buffer, also total chars written
+ * @flag: notifies if there was a modifier flag
+ * @space: notifies if space was printed
+ * @c0: character to be written to buffer
+ * @c1: character checking after % character
+ * @c2: character to check 2 spaces after % symbol
+ * @c3: unused for now, but may become a third specifier
+ * @error: indicates error or not (0 no error, 1 error)
+ */
+typedef struct inventory_s
+{
+	const char *fmt;
+	int i;
+	va_list *args;
+	char *buffer;
+	int buf_index;
+	int flag;
+	int space;
+	char c0;
+	char c1;
+	char c2;
+	char c3;
+	int error;
+} inventory_t;
 
 /**
- * struct buffer - buffer structure for our implimentation of printf
- * @buf: buffer to write characters
- * @tmpbuf: tmp buffer to write to before putting in buffer
- * @format: the string passed to our printf
- * @ap: the variadic address point
- * @bp: the current point in the buffer
- * @tp: the current point in the tmp buffer
- * @fp: the current point in the format
- * @printed: the number of chars printed from _write
+ * struct matches_s - printf specifiers and paired function
+ * @ch: the specifier
+ * @func: pointer to the conversion specifier function
  */
-
-typedef struct buffer
+typedef struct matches_s
 {
-	char *buf;
-	char *tmpbuf;
-	const char *format;
-	va_list ap;
-	int bp;
-	int tp;
-	int fp;
-	unsigned int printed;
-} buffer;
+	char ch;
+	void (*func)(inventory_t *inv);
+} matches_t;
 
-/**
- * struct tags - Format tags after %
- * @spec: the specifier
- * @length: the length
- * @prec: the precision
- * @width: the width
- * @flags: the flags
- */
-
-typedef struct tags
-{
-	char spec;
-	char length;
-	int prec;
-	int width;
-	char flags[6];
-} tags;
-
-/**
- * struct parse_table - Table used for parsing the %s
- * @c: character found
- * @level: which level from 5 (specification) to 1 (flags)
- * @spec_func: function to put the matched specification into the buffer
- */
-
-typedef struct parse_table
-{
-	char c;
-	int level;
-	void (*spec_func)();
-} parse_table;
-
-/* printf functions */
-
-void _copy(buffer *);
+/* initializing and ending functions */
 int _printf(const char *format, ...);
-void _parse(buffer *b_r);
-void _init_tag(tags *t);
-void _init_buffer(buffer *b_r, const char *format);
-void _spec_c(buffer *b_r, tags *t);
-void _spec_s(buffer *b_r, tags *t);
-void _spec_nil(buffer *b_r);
-void _spec_pct(buffer *b_r);
-void _spec_p(buffer *b_r, tags *t);
-void _spec_r(buffer *b_r, tags *t);
-void _spec_S(buffer *b_r, tags *t);
-void _spec_o(buffer *b_r, tags *t);
-void _spec_u(buffer *b_r, tags *t);
-void _spec_x(buffer *b_r, tags *t);
-void _spec_X(buffer *b_r, tags *t);
-void _spec_b(buffer *b_r, tags *t);
-void _spec_d(buffer *b_r, tags *t);
-void _spec_R(buffer *b_r, tags *t);
-void _error_(void);
-int __atoi(const char *s, int n);
+inventory_t *build_inventory(va_list *args_list, const char *format);
+int end_func(inventory_t *arg_inv);
 
-/* _write_to_buffer functions */
+/* custom memory allocation and buffer */
+void *_calloc(unsigned int nmemb, unsigned int size);
+void *_realloc(void *ptr, unsigned int old_size, unsigned int new_size);
+void write_buffer(inventory_t *inv);
+void puts_buffer(inventory_t *inv, char *str);
 
-void _write(buffer *b_r, char c);
-void _write_str(buffer *b_r, char *s);
-void _write_tmpbuf(buffer *b_r);
-void _parse_tag(buffer *b_r, tags *t, parse_table *table);
-int str_len(char *str);
-void _revstr(char *s);
-char *_str_whelp(tags *t, char *hold, int hold_len);
-char *_to_hex_unreadable(char *hold);
-void _to_rot13(char *s);
+/* string functions */
+void rev_string(char *s);
+int _strlen(char *s);
+int _strlenconst(const char *s);
+int _putchar(char c);
+void puts_mod(char *str, unsigned int l);
 
-/* to string functions */
+/* parse and match functionality */
+void (*match_specifier(inventory_t *inv))(inventory_t *inv);
+void parse_specifiers(inventory_t *inv);
 
-char *_int_to_str(long int n);
-char *_int_to_hexstr(long int n);
-char *_int_to_caphexstr(long int n);
-char *_int_to_octstr(long int n);
-char *_int_to_binstr(long int n);
+/* hexadecimal */
+void print_hex(inventory_t *inv, unsigned long int n, int hexcase, int size);
+void p_longlowhex(inventory_t *inv);
+void p_longuphex(inventory_t *inv);
+void p_lowhex(inventory_t *inv);
+void p_uphex(inventory_t *inv);
 
-/* unsigned to string functions */
+/* integers */
+void print_integers(inventory_t *inv, long int n);
+void p_int(inventory_t *inv);
+void p_longint(inventory_t *inv);
+void print_unsign(inventory_t *inv, unsigned long int n);
+void p_uint(inventory_t *inv);
+void p_ulongint(inventory_t *inv);
 
-char *_uint_to_str(unsigned long int n);
-char *_uint_to_hexstr(unsigned long int n);
-char *_uint_to_caphexstr(unsigned long int n);
-char *_uint_to_octstr(unsigned long int n);
-char *_uint_to_binstr(unsigned long int n);
+/* octals */
+void print_oct(inventory_t *inv, unsigned long int n, int size);
+void p_oct(inventory_t *inv);
+void p_longoct(inventory_t *inv);
 
-/* printf_flag_helper functions */
+/* handles specifier functions */
+void p_char(inventory_t *inv);
+void p_string(inventory_t *inv);
+void p_string_hex(inventory_t *inv);
+void p_pointer(inventory_t *inv);
+void p_rev_string(inventory_t *inv);
+void p_rot13(inventory_t *inv);
+void p_percent(inventory_t *inv);
+void p_binary(inventory_t *inv);
 
-int _isFlagMinus(tags *t);
-int _isFlagPlus(tags *t);
-int _isFlagSpace(tags *t);
-int _isFlagHashtag(tags *t);
-int _isFlagZero(tags *t);
-
-/* parse helper functions */
-
-void _found_spec(buffer *b_r, tags *t, parse_table *table, int i);
-void _found_length(buffer *b_r, tags *t, parse_table *table, int i);
-void _found_prec(buffer *b_r, tags *t, parse_table *table, int i);
-void _found_width(buffer *b_r, tags *t);
-void _found_flag(buffer *b_r, tags *t, parse_table *table, int i);
-
-/*spec num helper function*/
-
-void _spec_num_help(buffer *b_r, tags *t, char *num_str, int minus);
-int num_len(int n);
-void get_sign(tags *t, int minus, char *front);
-char *check_prec(char *tmp_str, char *num_str, tags *t, int s_len);
-void _out_of_time(char *buf_str, char *tmp_str, char *front, tags *t);
-#endif
+#endif /* end include guard for header files */
