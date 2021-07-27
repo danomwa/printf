@@ -5,6 +5,8 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+int _putchar(char c);
+
 /**
  * struct buffer - buffer structure for our implimentation of printf
  * @buf: buffer to write characters
